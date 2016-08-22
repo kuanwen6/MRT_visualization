@@ -1,0 +1,68 @@
+body {
+  font: 10px sans-serif;
+}
+
+.axis text {
+  font: 10px sans-serif;
+}
+
+.layer {
+    stroke-width: 2;
+    fill: none;
+}
+
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+}
+
+.grid .tick {
+    stroke: lightgrey;
+    stroke-opacity: 0.7;
+    shape-rendering: crispEdges;
+}
+.grid path {
+          stroke-width: 0;
+}
+
+#last{
+    font-size:20px;
+    margin:20px 0 5px 40px;
+}
+
+#next{
+    font-size:20px;
+    margin:20px 0 5px 20px;
+}
+
+h1{
+    font-size:30px;
+    margin:10px 0 0px 40px;
+}
+
+#nRadius{
+  width:250px;
+}
+
+.note{
+  margin:10px 0 0px 20px;
+}
+
+.toolrect{
+    stroke: lightgrey;
+    stroke-width:3;
+}
+
+.cirs{
+    stroke-width:1.5;
+}
+
+.tooltip{
+    pointer-events: none;
+}
+
+.pie{
+    stroke: #fff;
+}
