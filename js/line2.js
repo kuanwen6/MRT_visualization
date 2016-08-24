@@ -6,7 +6,8 @@ var margin = {top: 25, right: 200, bottom: 30, left: 50},
     width = 680 - margin.left - margin.right+730,
     height = 500 - margin.top - margin.bottom;
 
-    width1 = 430;
+// the edge of th left-hand side plot
+var width1 = 430;
 
 var x = d3.scale.ordinal()
       .rangeRoundBands([0, width1],.3);
@@ -14,10 +15,12 @@ var x = d3.scale.ordinal()
 var y = d3.scale.linear()
       .rangeRound([height,0]);
 
+// color for line chart
 var z = d3.scale.category20b()
       .domain(["2","1","0"])
       .range(["#e6550d","#31a354","#a55194"]);
 
+//color for pie plot
 var z2 = d3.scale.category20b()
       .domain(["2","1","0"])
       .range(["#fdae6b","#e6550d","#31a354"]);
@@ -32,7 +35,7 @@ var yAxis = d3.svg.axis()
     .orient("right")
     .tickFormat(d3.format(".2s"));
 
-var LyAxis= d3.svg.axis()
+var LyAxis= d3.svg.axis() //left y axis
     .scale(y)
     .orient("left")
     .tickFormat(d3.format(".2s"));
@@ -55,6 +58,16 @@ var legendClassArray = [];
 var yMaxValue=5228331;  //use python to generate this value
 var maxMoney=125352358.7142857;
 
+// pie plot
+var radius = 270 / 2;
+var arc = d3.svg.arc()
+    .outerRadius(radius - 10)
+    .innerRadius(0);
+var pie = d3.layout.pie()
+    .sort(null)
+    .value(function(d) { return d.value; });
+
+// bar chart and mouse tooltip
 d3.csv("data/money_y.csv", function(error, data) {
   if (error) throw error;
 
@@ -62,7 +75,6 @@ d3.csv("data/money_y.csv", function(error, data) {
     d.year = format.parse(d.year);
   })
 
-  //x.domain(d3.extent(data, function(d) { return d.month; }));
   x.domain(data.map(function(d) { return d.year; }));
   y.domain([0,maxMoney]).nice();
 
@@ -82,18 +94,15 @@ d3.csv("data/money_y.csv", function(error, data) {
       .attr("x", function(d) { return x(d.year); })
       .attr("width", x.rangeBand())
       .attr("fill","#add8e6")
-      //.attr("width", 20)
       .attr("y", function(d) { return y(d.money); })
       .attr("height", function(d) { return height - y(d.money); })
-      .on("mouseover", function() { tooltip.style("display", null); })
-      .on("mouseout", function() { tooltip.style("display", "none"); })
+      .on("mouseout", function() { d3.select(this).attr("fill","#add8e6");;})
       .on("mousemove", function(d) {
-        var year=d.year.getFullYear();
+        d3.select(this).attr("fill","#4fabc9"); // change color on mouse
 
-        var xPosition = d3.mouse(this)[0] - 15;
-        var yPosition = d3.mouse(this)[1] - 25;
-        tooltip.attr("transform", "translate(" + xPosition + "," + yPosition + ")");
-        tooltip.select("text").text(year+"年營業額:"+_f(d.money)+"(元)");
+        var year=d.year.getFullYear();
+        var monL=svg.selectAll(".monL")
+            .text(formatNumber(_f(d.money))+"(元)")
 
         d3.csv("data/ticket_y.csv", function(error, data) {
         if (error) throw error;
@@ -106,37 +115,9 @@ d3.csv("data/money_y.csv", function(error, data) {
             .text(year+"年份票卡比例")
         });
       });
-
-      var tooltip = svg.append("g")
-                   .attr("class", "tooltip")
-                   .style("display", "none");
-      tooltip.append("rect")
-        .attr("class", "toolrect")
-        .attr("width", 220)
-        .attr("height", 30)
-        .attr("fill", "white")
-        .style("opacity", 0.9);
-
-    tooltip.append("text")
-        .attr("x", 10)
-        .attr("dy", "1.2em")
-        .attr("font-size", "17px")
-        .attr("font-weight", "bold");
-
 });
 
-var radius = 270 / 2;
-
-var arc = d3.svg.arc()
-    .outerRadius(radius - 10)
-    .innerRadius(0);
-
-var pie = d3.layout.pie()
-    .sort(null)
-    .value(function(d) { return d.value; });
-
-
-
+// line chart and lengends
 d3.csv("data/ticket_y.csv", function(error, data) {
   if (error) throw error;
   data.forEach(function(d) {
@@ -154,21 +135,22 @@ svg.append("text")
         .attr("dy", ".71em")
         .text("流量 (次)");
 
-
+// line chart
   svg.selectAll(".layer")
       .data(layers)
       .enter().append("path")
       .attr("class", "layer")
-      .attr("transform", "translate(12,0)")
+      .attr("transform", "translate(16,0)")
       .attr("d", function(d) { return line(d.values); })
       .style("stroke", function(d,i) { return z(i); })
 
+// dot on line chart
   svg.selectAll(".dot")
         .data(data)
         .enter().append("circle")
         .attr("class", "dot")
         .attr("r", 3.5)
-        .attr("cx", function(d) {  return x(d.year)+12; })
+        .attr("cx", function(d) {  return x(d.year)+16; })
         .attr("cy", function(d) { return y(d.value); })
         .style("fill", function(d,i) {
           switch(d.type)
@@ -193,11 +175,11 @@ svg.append("text")
       .attr("transform", "translate(" + width1 + ",0)")
       .call(yAxis);
 
-    var legend = svg.selectAll(".legend")
+// lengend of line chart
+  var legend = svg.selectAll(".legend")
       .data(z.domain().slice().reverse())
       .enter().append("g")
       .attr("class", function (d) {
-
         legendClassArray.push(d);
         return "legend";
       })
@@ -250,11 +232,11 @@ svg.append("text")
       .attr("x", width1 + 86)
       .attr("y", 69)
       .attr("dy", ".35em")
-      .text("營業額");
+      .text("營業額(月平均)");
 
-var ye=2016,tol;
+// change data format for the pie plot
+  var ye=2016,tol;
   var data2 = new Array()
-
   data.forEach(function(d) {
     var Obj = new Object();
     var a=d.year.getFullYear();
@@ -278,49 +260,73 @@ var ye=2016,tol;
     }
   });
 
+// pie plot
   var path = svg.datum(data2).selectAll(".pie")
       .data(pie)
     .enter().append("path")
     .attr("class", "pie")
-      .attr("transform",  "translate("+(width1+360) +","+(height/2)+")" )
+      .attr("transform",  "translate("+(width1+355) +","+(height/2+90)+")" )
       .style("opacity",0.8)
       .attr("fill", function(d, i) { return z2(i); })
       .attr("d", arc)
       .each(function(d) { this._current = d; });
 
+//title of table on right-hand side
   var title=svg.append("text")
-      .attr("x", width -132)
-      .attr("y", height/2-70)
+      .attr("x", width1+260)
+      .attr("y", 0)
       .attr("class", "title")
       .style("font-size",22)
       .text(ye+"年份票卡比例")
 
+  svg.append("rect")
+      .attr("x",width1+250)
+      .attr("y",122)
+      .attr("width", 18)
+      .attr("height", 18)
+      .style("fill","#add8e6")
+
+    svg.append("text")
+      .attr("x", width1+273)
+      .attr("y", 132.5)
+      .attr("dy", ".35em")
+      .attr("class", "text2")
+      .text("月均營業額");
+
+  var monL=svg.append("text")
+      .attr("x", width1+365)
+      .attr("y", 135)
+      .attr("class", "monL")
+      .text(formatNumber(_f(125352358.7142857))+"(元)");
+
+// lengend of table
   var legend2 = svg.selectAll(".legend2")
       .data(z2.domain().slice().reverse())
       .enter().append("g")
       .attr("class", "legend2")
-      .attr("transform", function(d, i) { return "translate(0," + (i * 35+180) + ")"; });
+      .attr("transform", function(d, i) { return "translate(0," + (i * 35+18.5) + ")"; });
 
-  for(i=0;i<4;i++)
+// the table axis
+  for(i=0;i<5;i++)
   {
     svg.append("line")
       .style("stroke", "grey")
-      .attr("transform", function() { return "translate(0," + (i * 35+171) + ")"; })
-      .attr("x1", width - 145)
+      .attr("transform", function() { return "translate(0," + (i * 35+10) + ")"; })
+      .attr("x1", width1+245)
       .attr("y1", 0)
-      .attr("x2", width +  65)
+      .attr("x2", width1+455)
       .attr("y2", 0);
   }
 
   legend2.append("rect")
-      .attr("x", width - 140)
+      .attr("x",width1+250)
       .attr("width", 18)
       .attr("height", 18)
       .style("fill-opacity", 0.8)
       .style("fill", z2)
 
   legend2.append("text")
-      .attr("x", width -119)
+      .attr("x", width1+273)
       .attr("y", 9)
       .attr("dy", ".35em")
       .text(function(d) {
@@ -337,7 +343,7 @@ var ye=2016,tol;
       });
 
   legend2.append("text")
-      .attr("x", width -70)
+      .attr("x", width1+320)
       .attr("y", 9)
       .attr("dy", ".35em")
       .attr("class", "text1")
@@ -345,17 +351,17 @@ var ye=2016,tol;
         switch(d)
         {
           case "0":
-            return _f(data2[0].value)+"(次)"
+            return formatNumber(_f(data2[0].value))+"(次)"
           case "1":
-            return _f(data2[1].value)+"(次)"
+            return formatNumber(_f(data2[1].value))+"(次)"
           case "2":
-            return _f(data2[2].value)+"(次)"
+            return formatNumber(_f(data2[2].value))+"(次)"
           default:
         }
       });
 
   legend2.append("text")
-      .attr("x", width +20)
+      .attr("x", width1+410)
       .attr("y", 9)
       .attr("dy", ".35em")
       .attr("class", "text2")
@@ -371,15 +377,12 @@ var ye=2016,tol;
           default:
         }
       });
-
-
-
 });
 
-
+// update pie plot
 function piePlot(data,year)
 {
-   var tol;
+  var tol;
   var data2 = new Array()
 
  data.forEach(function(d) {
@@ -407,22 +410,22 @@ function piePlot(data,year)
 
   var path = svg.datum(data2).selectAll(".pie")
 
-    pie.value(function(d) { return d.value; }); // change the value function
-    path = path.data(pie); // compute the new angles
-    path.transition().duration(500).attrTween("d", arcTween); // redraw the arcs
+  pie.value(function(d) { return d.value; }); // change the value function
+  path = path.data(pie); // compute the new angles
+  path.transition().duration(500).attrTween("d", arcTween); // redraw the arcs
 
-    var legend2 = svg.selectAll(".legend2")
+  var legend2 = svg.selectAll(".legend2")
 
   legend2.selectAll(".text1")
       .text(function(d) {
         switch(d)
         {
           case "0":
-            return _f(data2[0].value)+"(次)"
+            return formatNumber(_f(data2[0].value))+"(次)"
           case "1":
-            return _f(data2[1].value)+"(次)"
+            return formatNumber(_f(data2[1].value))+"(次)"
           case "2":
-            return _f(data2[2].value)+"(次)"
+            return formatNumber(_f(data2[2].value))+"(次)"
           default:
         }
       });
@@ -448,4 +451,14 @@ function arcTween(a) {
         return function(t) {
           return arc(i(t));
         };
+}
+
+function formatNumber(number)
+{
+    x1 = number;
+    var rgx = /(\d+)(\d{3})/;
+    while (rgx.test(x1)) {
+        x1 = x1.replace(rgx, '$1' + ',' + '$2');
+    }
+    return x1;
 }
