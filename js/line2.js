@@ -486,7 +486,7 @@ d3.csv("data/ticket_y.csv", function(error, data) {
             detail(year,i);
             path.style("opacity",0.7);
             d3.select(this).style("opacity",0.95);
-            d3.select(this).transition().duration(200).ease("elastic").attr("d",arc2);
+            d3.select(this).transition().duration(200).delay(50).ease("elastic").attr("d",arc2);
             slice = i;
           }
           else // "unclick"
