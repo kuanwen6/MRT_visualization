@@ -1,9 +1,10 @@
 var format = d3.time.format("%Y");
+var format2 = d3.time.format("%m");
 var percentFormat = d3.format(".2p");
 var _f = d3.format(".0f");
 
 var margin = {top: 25, right: 200, bottom: 30, left: 50},
-    width = 680 - margin.left - margin.right+730,
+    width = 680 - margin.left - margin.right+630,
     height = 500 - margin.top - margin.bottom;
 
 // the edge of th left-hand side plot
@@ -14,6 +15,31 @@ var x = d3.scale.ordinal()
 
 var y = d3.scale.linear()
       .rangeRound([height,0]);
+
+////////// the x y axis for the pie chart click event//////////////
+var x2 = d3.scale.ordinal()
+      .rangeRoundBands([0, 265]);
+
+var y2 = d3.scale.linear()
+      .rangeRound([110,0]);
+
+var x2Axis = d3.svg.axis()
+    .scale(x2)
+    .orient("bottom")
+    .tickFormat(d3.time.format("%b"));
+
+var y2Axis = d3.svg.axis()
+    .scale(y2)
+    .orient("left")
+    .ticks(6)
+    .tickFormat(d3.format(".1s"));
+
+var line2 = d3.svg.line()
+    .x(function(d) { return x2(d.month); })
+    .y(function(d) { return y2(d.value); });
+
+var year=2016;
+////////////////////////////////////
 
 // color for line chart
 var z = d3.scale.category20b()
@@ -63,9 +89,182 @@ var radius = 270 / 2;
 var arc = d3.svg.arc()
     .outerRadius(radius - 10)
     .innerRadius(0);
+var arc2 = d3.svg.arc() //the bigger one when click the pie chart
+    .outerRadius(132)
+    .innerRadius(0);
 var pie = d3.layout.pie()
     .sort(null)
     .value(function(d) { return d.value; });
+
+function detail(year,i){
+  d3.csv("data/ticket/"+(year-1911)+".csv", function(error, data) {
+  if (error) throw error;
+
+  data.forEach(function(d) {
+    d.month = format2.parse(d.month);
+    d.value = +d.value;
+  });
+
+  var type;
+  var data2 = new Array()
+  data.forEach(function(d) {
+    var Obj = new Object();
+    if(d.type === "ticket" && i === 0)
+    {
+      Obj.type = "ticket";
+      Obj.month = d.month;
+      Obj.value = +d.value;
+      data2.push(Obj);
+
+      type="票卡";
+    }
+    else if(d.type === "one_way" && i === 1)
+    {
+      Obj.type = "one_way";
+      Obj.month = d.month;
+      Obj.value = +d.value;
+      data2.push(Obj);
+
+      type="單程票";
+    }
+    else if(d.type === "other" && i === 2)
+    {
+
+      Obj.type = "other";
+      Obj.month = d.month;
+      Obj.value = +d.value;
+      data2.push(Obj);
+
+      type="其他";
+    }
+  });
+
+  var layers = nest.entries(data2);
+
+  x2.domain(data2.map(function(d) { return d.month; }));
+  y2.domain([0,d3.max(data, function(d) { return d.value; })]).nice();
+
+  var tooltip = svg.selectAll(".tooltip");
+
+// line chart
+  tooltip.selectAll(".layer2")
+      .data(layers)
+      .attr("d", function(d) { return line2(d.values); })
+      .style("stroke", function(d,i) {
+        switch(d.key)
+          {
+            case "ticket":
+              return z2(0)
+            case "one_way":
+              return z2(1)
+            case "other":
+              return z2(2)
+            default:
+          }
+        });
+
+  tooltip.selectAll(".y2.axis")
+      .call(y2Axis);
+
+// dot on line chart
+  tooltip.selectAll(".dot2")
+        .data(data2)
+        .attr("cx", function(d) {  return x2(d.month)+36; })
+        .attr("cy", function(d) { return y2(d.value)+20; })
+        .style("fill", function(d,i) {
+          switch(d.type)
+          {
+            case "ticket":
+              return z2(0)
+            case "one_way":
+              return z2(1)
+            case "other":
+              return z2(2)
+            default:
+          }
+        });
+
+    tooltip.selectAll(".ltitle")
+        .text(year+"年各月"+type+"流量(次)")
+
+});
+}
+
+d3.csv("data/ticket/102.csv", function(error, data) {
+  if (error) throw error;
+
+  data.forEach(function(d) {
+    d.month = format2.parse(d.month);
+    d.value = +d.value;
+  });
+
+  var data2 = new Array()
+  data.forEach(function(d) {
+    var Obj = new Object();
+    if(d.type === "ticket")
+    {
+      Obj.type = "ticket";
+      Obj.month = d.month;
+      Obj.value = +d.value;
+      data2.push(Obj);
+    }
+  });
+
+  var layers = nest.entries(data2);
+
+  x2.domain(data2.map(function(d) { return d.month; }));
+  y2.domain([0,d3.max(data, function(d) { return d.value; })]).nice();
+
+  var tooltip = svg.append("g")
+                   .attr("class", "tooltip")
+                   .attr("transform", "translate("+(width1+530)+",300)")
+                   .style("opacity", 0);
+
+  tooltip.append("rect")
+        .attr("class", "toolrect")
+        .attr("width", 300)
+        .attr("height",147)
+        .attr("fill", "white")
+        .attr("rx",10)
+        .attr("ry",10)
+        .style("opacity", 0.9);
+
+// line chart
+  tooltip.selectAll(".layer2")
+      .data(layers)
+      .enter().append("path")
+      .attr("class", "layer2")
+      .attr("transform", "translate(36,20)")
+      .attr("d", function(d) { return line2(d.values); })
+      .style("stroke", "none");
+
+  tooltip.append("g")
+      .attr("class", "x2 axis")
+      .attr("transform", "translate(25,130)")
+      .call(x2Axis);
+
+  tooltip.append("g")
+      .attr("class", "y2 axis")
+      .attr("transform", "translate(25,20)")
+      .call(y2Axis);
+
+// dot on line chart
+  tooltip.selectAll(".dot2")
+        .data(data2)
+        .enter().append("circle")
+        .attr("class", "dot2")
+        .attr("r", 3.5)
+        .attr("cx", function(d) {  return x2(d.month)+36; })
+        .attr("cy", function(d) { return y2(d.value)+20; })
+        .style("fill","none");
+
+    tooltip.append("text")
+        .attr("transform", "translate(0,10)")
+        .attr("class", "ltitle")
+        .text("2016年各月票卡流量(次)")
+});
+
+var newOpacity = 0;
 
 // bar chart and mouse tooltip
 d3.csv("data/money_y.csv", function(error, data) {
@@ -98,9 +297,11 @@ d3.csv("data/money_y.csv", function(error, data) {
       .attr("height", function(d) { return height - y(d.money); })
       .on("mouseout", function() { d3.select(this).attr("fill","#add8e6");;})
       .on("mousemove", function(d) {
+        // if pie chart haven't be click
+        if(newOpacity===0){
         d3.select(this).attr("fill","#4fabc9"); // change color on mouse
 
-        var year=d.year.getFullYear();
+        var year2=d.year.getFullYear();
         var monL=svg.selectAll(".monL")
             .text(formatNumber(_f(d.money))+"(元)")
 
@@ -110,10 +311,12 @@ d3.csv("data/money_y.csv", function(error, data) {
           d.year = format.parse(d.year);
            d.value = +d.value;
           });
-          piePlot(data,year)
+          piePlot(data,year2)
+          year=year2;
           var title=svg.selectAll(".title")
-            .text(year+"年份票卡比例")
+            .text(year2+"年份票卡比例")
         });
+        }
       });
 });
 
@@ -130,7 +333,7 @@ d3.csv("data/ticket_y.csv", function(error, data) {
   x.domain(data.map(function(d) { return d.year; }));
   y.domain([0,yMaxValue]).nice();
 
-svg.append("text")
+  svg.append("text")
         .attr("transform", "translate("+ width1 +",-20)")
         .attr("dy", ".71em")
         .text("流量 (次)");
@@ -140,6 +343,7 @@ svg.append("text")
       .data(layers)
       .enter().append("path")
       .attr("class", "layer")
+      .attr("id","totalLine")
       .attr("transform", "translate(16,0)")
       .attr("d", function(d) { return line(d.values); })
       .style("stroke", function(d,i) { return z(i); })
@@ -260,31 +464,56 @@ svg.append("text")
     }
   });
 
+  var slice=5; //the beginning state
 // pie plot
   var path = svg.datum(data2).selectAll(".pie")
       .data(pie)
     .enter().append("path")
     .attr("class", "pie")
       .attr("transform",  "translate("+(width1+355) +","+(height/2+90)+")" )
-      .style("opacity",0.8)
+      .style("opacity",0.95)
       .attr("fill", function(d, i) { return z2(i); })
       .attr("d", arc)
-      .each(function(d) { this._current = d; });
+      .each(function(d) { this._current = d; })
+      .on("click", function(d,i){
+        if(slice === 5 || slice === i){
+          // Determine if current line is visible
+          var active   = totalLine.active ? false : true;
+          newOpacity = active ? 1 : 0;
+          // Hide or show the elements
+          if (newOpacity === 1) // the "click"
+          {
+            detail(year,i);
+            path.style("opacity",0.7);
+            d3.select(this).style("opacity",0.95);
+            d3.select(this).transition().duration(200).ease("elastic").attr("d",arc2);
+            slice = i;
+          }
+          else // "unclick"
+          {
+            path.style("opacity",0.95);
+            path.transition().duration(200).attr("d",arc);
+            slice = 5;
+          }
+          d3.selectAll(".tooltip").style("opacity", newOpacity);
+          // Update whether or not the elements are active
+          totalLine.active = active;
+        }
+      });
 
 //title of table on right-hand side
   var title=svg.append("text")
-      .attr("x", width1+260)
+      .attr("x", width1+350)
       .attr("y", 0)
       .attr("class", "title")
-      .style("font-size",22)
-      .text(ye+"年份票卡比例")
+      .text(ye+"年份票卡比例");
 
   svg.append("rect")
       .attr("x",width1+250)
       .attr("y",122)
       .attr("width", 18)
       .attr("height", 18)
-      .style("fill","#add8e6")
+      .style("fill","#add8e6");
 
     svg.append("text")
       .attr("x", width1+273)
@@ -322,7 +551,7 @@ svg.append("text")
       .attr("x",width1+250)
       .attr("width", 18)
       .attr("height", 18)
-      .style("fill-opacity", 0.8)
+      .style("fill-opacity", 0.95)
       .style("fill", z2)
 
   legend2.append("text")
@@ -377,6 +606,7 @@ svg.append("text")
           default:
         }
       });
+
 });
 
 // update pie plot

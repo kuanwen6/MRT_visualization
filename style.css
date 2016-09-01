@@ -11,6 +11,11 @@ body {
     fill: none;
 }
 
+.layer2 {
+    stroke-width: 2;
+    fill: none;
+}
+
 .axis2 path,
 .axis2 line,
 .axis path,
@@ -19,32 +24,13 @@ body {
   stroke: #000;
 }
 
-.grid .tick {
-    stroke: lightgrey;
-    stroke-opacity: 0.7;
-    shape-rendering: crispEdges;
-}
 .grid path {
           stroke-width: 0;
 }
 
-#last{
-    font-size:20px;
-    margin:20px 0 5px 40px;
-}
-
-#next{
-    font-size:20px;
-    margin:20px 0 5px 20px;
-}
-
 h1{
     font-size:30px;
-    margin:10px 0 0px 40px;
-}
-
-#nRadius{
-  width:250px;
+    margin:10px 0 20px 50px;
 }
 
 .note{
@@ -53,7 +39,8 @@ h1{
 
 .toolrect{
     stroke: lightgrey;
-    stroke-width:3;
+    fill: lightgrey;
+    stroke-width:5;
 }
 
 .cirs{
@@ -64,11 +51,24 @@ h1{
     pointer-events: none;
 }
 
-.toolrect{
-    stroke: lightgrey;
-    stroke-width:3;
-}
-
 .pie{
     stroke: #fff;
+}
+
+.pieTip{
+    font-size:30px;
+    pointer-events: none;
+}
+
+.title{
+  text-anchor:middle;
+  font-size:22px;
+}
+
+.more{
+    position: absolute;
+    top: 565px;
+    left: 730px;
+    width: 300px;
+    height: 100px;
 }
