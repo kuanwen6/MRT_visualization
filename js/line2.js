@@ -96,12 +96,13 @@ var pie = d3.layout.pie()
     .sort(null)
     .value(function(d) { return d.value; });
 
+var tag; //tag for finish the detail function
 function detail(year,i){
+  tag=0;
+
   d3.csv("data/ticket/"+(year-1911)+".csv", function(error, data) {
   if (error) throw error;
-
-  var type;
-  var data2 = new Array();
+  var type,data2 = new Array();
   data.forEach(function(d) {
     var Obj = new Object();
     if(d.type === "ticket" && i === 0)
@@ -174,21 +175,14 @@ function detail(year,i){
         });
 
     tooltip.selectAll(".ltitle")
-        .text(year+"年各月"+name+"流量(次)");
+        .text(year+"年各月「"+type+"」流量(次)");
 
-     tooltip.selectAll(".y2.axis")
+    tooltip.selectAll(".y2.axis")
       .call(y2Axis);
-
-});
-}
-
-for(i=97;i<105;i++) // load the data first to speed up the later loading time
-{
-  d3.csv("data/ticket/"+i+".csv", function(error, data) {
-    if (error) throw error;
   });
-}
 
+  tag = 1;
+}
 d3.csv("data/ticket/105.csv", function(error, data) {
   if (error) throw error;
 
@@ -223,15 +217,6 @@ d3.csv("data/ticket/105.csv", function(error, data) {
         .attr("ry",10)
         .style("opacity", 0.9);
 
-// line chart
-  tooltip.selectAll(".layer2")
-      .data(layers)
-      .enter().append("path")
-      .attr("class", "layer2")
-      .attr("transform", "translate(36,20)")
-      .attr("d", function(d) { return line2(d.values); })
-      .style("stroke", "none");
-
   tooltip.append("g")
       .attr("class", "x2 axis")
       .attr("transform", "translate(25,130)")
@@ -241,6 +226,15 @@ d3.csv("data/ticket/105.csv", function(error, data) {
       .attr("class", "y2 axis")
       .attr("transform", "translate(25,20)")
       .call(y2Axis);
+
+// line chart
+  tooltip.selectAll(".layer2")
+      .data(layers)
+      .enter().append("path")
+      .attr("class", "layer2")
+      .attr("transform", "translate(36,20)")
+      .attr("d", function(d) { return line2(d.values); })
+      .style("stroke", "none");
 
 // dot on line chart
   tooltip.selectAll(".dot2")
@@ -253,13 +247,12 @@ d3.csv("data/ticket/105.csv", function(error, data) {
         .style("fill","none");
 
     tooltip.append("text")
-        .attr("transform", "translate(0,10)")
+        .attr("transform", "translate(295,10)")
         .attr("class", "ltitle")
-        .text("2016年各月票卡流量(次)");
+        .style("text-anchor","end");
 });
 
 var newOpacity = 0;
-
 // bar chart and mouse tooltip
 d3.csv("data/money_y.csv", function(error, data) {
   if (error) throw error;
@@ -289,9 +282,9 @@ d3.csv("data/money_y.csv", function(error, data) {
       .attr("fill","#add8e6")
       .attr("y", function(d) { return y(d.money); })
       .attr("height", function(d) { return height - y(d.money); })
-      .on("mouseout", function() { d3.select(this).attr("fill","#add8e6");;})
+      .on("mouseout", function() { d3.select(this).attr("fill","#add8e6");})
       .on("mousemove", function(d) {
-        // if pie chart haven't be click
+        // if pie chart haven't be clicked,you can acess bar chart tooltip
         if(newOpacity===0){
           d3.select(this).attr("fill","#4fabc9"); // change color on mouse
 
@@ -390,10 +383,7 @@ d3.csv("data/ticket_y.csv", function(error, data) {
       .attr("cy", 8)
       .attr("cx", width1 + 65)
       .attr("r", 3.5)
-      .style("fill", z)
-      .attr("id", function (d, i) {
-        return "id" + d;
-      });
+      .style("fill", z);
 
   legend.append("line")
       .attr("x1", width1+53)
@@ -433,8 +423,7 @@ d3.csv("data/ticket_y.csv", function(error, data) {
       .text("營業額(月平均)");
 
 // change data format for the pie plot
-  var tol;
-  var data2 = new Array();
+  var tol, data2 = new Array();
   data.forEach(function(d) {
     var Obj = new Object();
     var a=d.year.getFullYear();
@@ -469,6 +458,21 @@ d3.csv("data/ticket_y.csv", function(error, data) {
       .attr("fill", function(d, i) { return z2(i); })
       .attr("d", arc)
       .each(function(d) { this._current = d; })
+     /* .on("mouseout", function() {
+        if(slice === 5)
+        {
+          d3.select(this).transition().duration(200).ease("elastic").attr("d",arc);
+          path.style("opacity",0.95);
+        }
+      })
+      .on("mousemove", function(d) {
+        if(slice === 5)
+        {
+          d3.select(this).transition().duration(200).delay(50).ease("elastic").attr("d",arc2);
+          path.style("opacity",0.65);
+          d3.select(this).style("opacity",0.95);
+        }
+      })*/
       .on("click", function(d,i){
         if(slice === 5 || slice === i){
           var active   = totalLine.active ? false : true;
@@ -478,9 +482,11 @@ d3.csv("data/ticket_y.csv", function(error, data) {
             detail(year,i);
             path.style("opacity",0.65);
             d3.select(this).style("opacity",0.95);
-            d3.select(this).transition().duration(200).delay(50).ease("elastic").attr("d",arc2);
+            d3.select(this).transition().duration(200).ease("elastic").attr("d",arc2);
+            //d3.select(this).style("stroke","#e6c300").style("stroke-width",2);
             slice = i;
 
+            // high light the clicked one
             legend2.selectAll(".text2").style("opacity",0.4);
             legend2.select("#text2id"+i).style("opacity",1);
             legend2.selectAll(".text1").style("opacity",0.4);
@@ -494,13 +500,17 @@ d3.csv("data/ticket_y.csv", function(error, data) {
           {
             path.style("opacity",0.95);
             path.transition().duration(200).attr("d",arc);
+            //d3.select(this).style("stroke","none");
             slice = 5;
             legend2.selectAll(".legend2").style("opacity",0.95);
             legend2.selectAll(".type").style("opacity",1);
             legend2.selectAll(".text1").style("opacity",1);
             legend2.selectAll(".text2").style("opacity",1);
           }
-          d3.selectAll(".tooltip").style("opacity", newOpacity);
+          if(tag === 1)// if finish the plot update
+          {
+            d3.selectAll(".tooltip").style("opacity", newOpacity);
+          }
           // Update whether or not the elements are active
           totalLine.active = active;
         }
