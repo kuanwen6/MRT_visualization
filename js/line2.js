@@ -179,10 +179,18 @@ function detail(year,i){
 
     tooltip.selectAll(".y2.axis")
       .call(y2Axis);
-  });
 
+  });
   tag = 1;
 }
+
+for(i=97;i<105;i++) // loading the data first to reduse the later loading time
+{
+  d3.csv("data/ticket/"+i+".csv", function(error, data) {
+  if (error) throw error;
+  });
+}
+
 d3.csv("data/ticket/105.csv", function(error, data) {
   if (error) throw error;
 
