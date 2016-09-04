@@ -96,10 +96,7 @@ var pie = d3.layout.pie()
     .sort(null)
     .value(function(d) { return d.value; });
 
-var tag; //tag for finish the detail function
-function detail(year,i){
-  tag=0;
-
+function detail(year,i,callback){
   d3.csv("data/ticket/"+(year-1911)+".csv", function(error, data) {
   if (error) throw error;
   var type,data2 = new Array();
@@ -154,7 +151,7 @@ function detail(year,i){
             return z2(2);
           default:
         }
-      });
+      })
 
 // dot on line chart
   tooltip.selectAll(".dot2")
@@ -174,20 +171,14 @@ function detail(year,i){
           }
         });
 
+
     tooltip.selectAll(".ltitle")
         .text(year+"年各月「"+type+"」流量(次)");
 
     tooltip.selectAll(".y2.axis")
       .call(y2Axis);
 
-  });
-  tag = 1;
-}
-
-for(i=97;i<105;i++) // loading the data first to reduse the later loading time
-{
-  d3.csv("data/ticket/"+i+".csv", function(error, data) {
-  if (error) throw error;
+    callback(); //make sure callback function do after d3.csv is done
   });
 }
 
@@ -487,7 +478,7 @@ d3.csv("data/ticket_y.csv", function(error, data) {
           newOpacity = active ? 1 : 0;
           if (newOpacity === 1) // the "click"
           {
-            detail(year,i);
+            detail(year,i,function(){ d3.selectAll(".tooltip").style("opacity", newOpacity);});
             path.style("opacity",0.65);
             d3.select(this).style("opacity",0.95);
             d3.select(this).transition().duration(200).ease("elastic").attr("d",arc2);
@@ -514,9 +505,6 @@ d3.csv("data/ticket_y.csv", function(error, data) {
             legend2.selectAll(".type").style("opacity",1);
             legend2.selectAll(".text1").style("opacity",1);
             legend2.selectAll(".text2").style("opacity",1);
-          }
-          if(tag === 1)// if finish the plot update
-          {
             d3.selectAll(".tooltip").style("opacity", newOpacity);
           }
           // Update whether or not the elements are active
