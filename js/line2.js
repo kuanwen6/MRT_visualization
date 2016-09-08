@@ -175,10 +175,17 @@ function detail(year,i,callback){
     tooltip.selectAll(".ltitle")
         .text(year+"年各月「"+type+"」流量(次)");
 
-    tooltip.selectAll(".y2.axis")
+    tooltip.selectAll(".y.axis2")
       .call(y2Axis);
 
     callback(); //make sure callback function do after d3.csv is done
+  });
+}
+
+for(i=97;i<105;i++)// speed up loading
+{
+  d3.csv("data/ticket/"+i+".csv", function(error, data) {
+    if (error) throw error;
   });
 }
 
@@ -217,12 +224,12 @@ d3.csv("data/ticket/105.csv", function(error, data) {
         .style("opacity", 0.9);
 
   tooltip.append("g")
-      .attr("class", "x2 axis")
+      .attr("class", "x axis2")
       .attr("transform", "translate(25,130)")
       .call(x2Axis);
 
   tooltip.append("g")
-      .attr("class", "y2 axis")
+      .attr("class", "y axis2")
       .attr("transform", "translate(25,20)")
       .call(y2Axis);
 
@@ -264,7 +271,7 @@ d3.csv("data/money_y.csv", function(error, data) {
   y.domain([0,maxMoney]).nice();
 
   svg.append("text")
-        .attr("transform", "translate(-35,-20)")
+        .attr("transform", "translate(-42,-20)")
         .attr("dy", ".71em")
         .text("營業額 (元)");
 
@@ -530,14 +537,12 @@ d3.csv("data/ticket_y.csv", function(error, data) {
       .attr("x", width1+273)
       .attr("y", 132.5)
       .attr("dy", ".35em")
-      .attr("class", "text2")
       .text("月均營業額");
 
   var monL=svg.append("text")
-      .attr("x", width1+453)
+      .attr("x", width1+455)
       .attr("y", 135)
       .attr("class", "monL")
-      .style("text-anchor","end")
       .text(formatNumber(_f(125352358.7142857))+"(元)");
 
 // lengend of table
@@ -555,7 +560,7 @@ d3.csv("data/ticket_y.csv", function(error, data) {
       .attr("transform", function() { return "translate(0," + (i * 35+10) + ")"; })
       .attr("x1", width1+245)
       .attr("y1", 0)
-      .attr("x2", width1+455)
+      .attr("x2", width1+457)
       .attr("y2", 0);
   }
 
@@ -592,7 +597,7 @@ d3.csv("data/ticket_y.csv", function(error, data) {
       });
 
   legend2.append("text")
-      .attr("x", width1+320)
+      .attr("x", width1+405)
       .attr("y", 9)
       .attr("dy", ".35em")
       .attr("class", "text1")
@@ -613,14 +618,13 @@ d3.csv("data/ticket_y.csv", function(error, data) {
       });
 
   legend2.append("text")
-      .attr("x", width1+450)
+      .attr("x", width1+452)
       .attr("y", 9)
       .attr("dy", ".35em")
       .attr("class", "text2")
       .attr("id",function(d,i){
         return "text2id"+i;
       })
-      .style("text-anchor","end")
       .text(function(d) {
         switch(d)
         {
@@ -639,8 +643,7 @@ d3.csv("data/ticket_y.csv", function(error, data) {
 // update pie plot
 function piePlot(data,year)
 {
-  var tol;
-  var data2 = new Array();
+  var tol,data2 = new Array();
 
   data.forEach(function(d) {
     var Obj = new Object();
@@ -710,6 +713,7 @@ function arcTween(a) {
         };
 }
 
+// add , after every 3 digits
 function formatNumber(number)
 {
     x1 = number;

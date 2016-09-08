@@ -1,17 +1,10 @@
-body {
+body,
+.axis text{
   font: 10px sans-serif;
 }
 
-.axis text {
-  font: 10px sans-serif;
-}
-
-.layer {
-    stroke-width: 2;
-    fill: none;
-}
-
-.layer2 {
+.layer,
+.layer2{
     stroke-width: 2;
     fill: none;
 }
@@ -24,13 +17,9 @@ body {
   stroke: #000;
 }
 
-.grid path {
-          stroke-width: 0;
-}
-
 h1{
     font-size:30px;
-    margin:10px 0 20px 50px;
+    margin:10px 0 50px 250px;
 }
 
 .note{
@@ -41,14 +30,6 @@ h1{
     stroke: lightgrey;
     fill: lightgrey;
     stroke-width:5;
-}
-
-.cirs{
-    stroke-width:1.5;
-}
-
-.tooltip{
-    pointer-events: none;
 }
 
 .pie{
@@ -63,6 +44,12 @@ h1{
 .title{
   text-anchor:middle;
   font-size:22px;
+}
+
+.text1,
+.text2,
+.monL{
+  text-anchor:end;
 }
 
 .more{
