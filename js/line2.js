@@ -99,35 +99,30 @@ var pie = d3.layout.pie()
 function detail(year,i,callback){
   d3.csv("data/ticket/"+(year-1911)+".csv", function(error, data) {
   if (error) throw error;
-  var type,data2 = new Array();
+
+  switch(i)
+  {
+    case 0:
+      var type="票卡";
+      break;
+    case 1:
+      var type="單程票";
+      break;
+    case 2:
+      var type="其他";
+      break;
+  }
+var data2 = new Array();
+
   data.forEach(function(d) {
+    d.month = format2.parse(d.month);
     var Obj = new Object();
-    if(d.type === "ticket" && i === 0)
+    if(d.value != "0")
     {
-      Obj.type = "ticket";
-      Obj.month = format2.parse(d.month);
+      Obj.type = d.type;
+      Obj.month = d.month;
       Obj.value = d.value;
       data2.push(Obj);
-
-      type="票卡";
-    }
-    else if(d.type === "one_way" && i === 1)
-    {
-      Obj.type = "one_way";
-      Obj.month = format2.parse(d.month);
-      Obj.value = d.value;
-      data2.push(Obj);
-
-      type="單程票";
-    }
-    else if(d.type === "other" && i === 2)
-    {
-      Obj.type = "other";
-      Obj.month = format2.parse(d.month);
-      Obj.value = d.value;
-      data2.push(Obj);
-
-      type="其他";
     }
   });
 
@@ -140,6 +135,7 @@ function detail(year,i,callback){
   tooltip.selectAll(".layer2")
       .data(layers)
       .attr("d", function(d) { return line2(d.values); })
+      .style("opacity",0.25)
       .style("stroke", function(d) {
         switch(d.key)
         {
@@ -155,9 +151,25 @@ function detail(year,i,callback){
 
 // dot on line chart
   tooltip.selectAll(".dot2")
-        .data(data2)
+        .data(data)
         .attr("cx", function(d) {  return x2(d.month)+36; })
         .attr("cy", function(d) { return y2(d.value)+20; })
+        .attr("id",function(d,i){
+          if(d.value === "0")
+          {
+            return "dot0";
+          }
+          switch(d.type)
+          {
+            case "ticket":
+              return "dot20";
+            case "one_way":
+              return "dot21";
+            case "other":
+              return "dot22";
+          }
+        })
+        .style("opacity",0.25)
         .style("fill", function(d) {
           switch(d.type)
           {
@@ -171,6 +183,9 @@ function detail(year,i,callback){
           }
         });
 
+    tooltip.selectAll("#line"+i).style("opacity",1);
+    tooltip.selectAll("#dot2"+i).style("opacity",1);
+    tooltip.selectAll("#dot0").style("opacity",0);
 
     tooltip.selectAll(".ltitle")
         .text(year+"年各月「"+type+"」流量(次)");
@@ -189,24 +204,17 @@ for(i=97;i<105;i++)// speed up loading
   });
 }
 
-d3.csv("data/ticket/105.csv", function(error, data) {
+d3.csv("data/ticket/104.csv", function(error, data) {
   if (error) throw error;
 
-  var data2 = new Array();
   data.forEach(function(d) {
-    var Obj = new Object();
-    if(d.type === "ticket")
-    {
-      Obj.type = "ticket";
-      Obj.month = format2.parse(d.month);
-      Obj.value = d.value;
-      data2.push(Obj);
-    }
+    d.month = format2.parse(d.month);
+    //d.value = +d.value;
   });
 
-  var layers = nest.entries(data2);
+  var layers = nest.entries(data);
 
-  x2.domain(data2.map(function(d) { return d.month; }));
+  x2.domain(data.map(function(d) { return d.month; }));
   y2.domain([0,d3.max(data, function(d) { return d.value; })]).nice();
 
   var tooltip = svg.append("g")
@@ -238,13 +246,14 @@ d3.csv("data/ticket/105.csv", function(error, data) {
       .data(layers)
       .enter().append("path")
       .attr("class", "layer2")
+      .attr("id",function(d,i){return "line"+i;})
       .attr("transform", "translate(36,20)")
       .attr("d", function(d) { return line2(d.values); })
       .style("stroke", "none");
 
 // dot on line chart
   tooltip.selectAll(".dot2")
-        .data(data2)
+        .data(data)
         .enter().append("circle")
         .attr("class", "dot2")
         .attr("r", 3.5)
