@@ -1,4 +1,4 @@
-body,
+.plot,
 .axis text{
   font: 10px sans-serif;
 }
@@ -17,14 +17,6 @@ body,
   stroke: #000;
 }
 
-h1{
-    font-size:30px;
-    margin:10px 0 50px 250px;
-}
-
-.note{
-  margin:10px 0 0px 20px;
-}
 
 .toolrect{
     stroke: lightgrey;
@@ -54,8 +46,20 @@ h1{
 
 .more{
     position: absolute;
-    top: 565px;
-    left: 730px;
+    font-size: 10px;
+    top: 595px;
+    left: 750px;
     width: 300px;
     height: 100px;
+}
+
+ @media only screen and (max-width: 500px) {
+            .more{
+                position: absolute;
+                font-size: 15px;
+                top: 595px;
+                left: 750px;
+                width: 300px;
+                height: 100px;
+            }
 }

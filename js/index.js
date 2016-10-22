@@ -5,23 +5,24 @@ var _f = d3.format(".0f");
 
 var margin = {top: 25, right: 200, bottom: 30, left: 50},
     width = 680 - margin.left - margin.right+630,
-    height = 500 - margin.top - margin.bottom;
+    height = 600 - margin.top - margin.bottom;
 
 // the edge of th left-hand side plot
-var width1 = 430;
+var width1 = 400; height1=445;
 
 var x = d3.scale.ordinal()
       .rangeRoundBands([0, width1],.3);
 
 var y = d3.scale.linear()
-      .rangeRound([height,0]);
+      .rangeRound([420,0]);
+
 
 ////////// the x y axis for the pie chart click event//////////////
 var x2 = d3.scale.ordinal()
       .rangeRoundBands([0, 265]);
 
 var y2 = d3.scale.linear()
-      .rangeRound([110,0]);
+      .rangeRound([95,0]);
 
 var x2Axis = d3.svg.axis()
     .scale(x2)
@@ -73,7 +74,7 @@ var line = d3.svg.line()
     .x(function(d) { return x(d.year); })
     .y(function(d) { return y(d.value); });
 
-var svg = d3.select("body").append("svg")
+var svg = d3.select(".plot").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
@@ -85,16 +86,36 @@ var yMaxValue=5228331;  //use python to generate this value
 var maxMoney=125352358.7142857;
 
 // pie plot
-var radius = 270 / 2;
+var radius = 240 / 2;
 var arc = d3.svg.arc()
     .outerRadius(radius - 10)
     .innerRadius(0);
 var arc2 = d3.svg.arc() //the bigger one when click the pie chart
-    .outerRadius(132)
+    .outerRadius(117)
     .innerRadius(0);
 var pie = d3.layout.pie()
     .sort(null)
     .value(function(d) { return d.value; });
+
+
+svg.append("text")
+        .attr("transform", "translate(-25,490)")
+        .style("font-size","13.5px")
+        .style("font-family","Microsoft JhengHei")
+        .style("font-weight","bold")
+        .text("※表列其他係差異旅次、腳踏車票、一日卡、團體票、TM卡等");
+svg.append("text")
+        .attr("transform", "translate(-25,515)")
+        .style("font-size","13.5px")
+        .style("font-family","Microsoft JhengHei")
+        .style("font-weight","bold")
+        .text("※票卡為各家公司發行票種，包含一卡通、愛金卡以及遠鑫卡(並在2016年7月後加入悠遊卡)");
+svg.append("text")
+        .attr("transform", "translate(-25,540)")
+        .style("font-size","13.5px")
+        .style("font-family","Microsoft JhengHei")
+        .style("font-weight","bold")
+        .text("※點選圓餅圖得知當月更多資料詳情!");
 
 function detail(year,i,callback){
   d3.csv("data/ticket/"+(year-1911)+".csv", function(error, data) {
@@ -126,6 +147,7 @@ var data2 = new Array();
     }
   });
 
+
   y2.domain([0,d3.max(data, function(d) { return +d.value; })]).nice();
 
   var layers = nest.entries(data2);
@@ -153,7 +175,7 @@ var data2 = new Array();
   tooltip.selectAll(".dot2")
         .data(data)
         .attr("cx", function(d) {  return x2(d.month)+36; })
-        .attr("cy", function(d) { return y2(d.value)+20; })
+        .attr("cy", function(d) { return y2(d.value)+10; })
         .attr("id",function(d,i){
           if(d.value === "0")
           {
@@ -219,13 +241,13 @@ d3.csv("data/ticket/104.csv", function(error, data) {
 
   var tooltip = svg.append("g")
                    .attr("class", "tooltip")
-                   .attr("transform", "translate("+(width1+530)+",300)")
+                   .attr("transform", "translate("+(width1+220)+",440)")
                    .style("opacity", 0);
 
   tooltip.append("rect")
         .attr("class", "toolrect")
         .attr("width", 300)
-        .attr("height",147)
+        .attr("height",125)
         .attr("fill", "white")
         .attr("rx",10)
         .attr("ry",10)
@@ -233,12 +255,12 @@ d3.csv("data/ticket/104.csv", function(error, data) {
 
   tooltip.append("g")
       .attr("class", "x axis2")
-      .attr("transform", "translate(25,130)")
+      .attr("transform", "translate(25,105)")
       .call(x2Axis);
 
   tooltip.append("g")
       .attr("class", "y axis2")
-      .attr("transform", "translate(25,20)")
+      .attr("transform", "translate(25,10)")
       .call(y2Axis);
 
 // line chart
@@ -247,7 +269,7 @@ d3.csv("data/ticket/104.csv", function(error, data) {
       .enter().append("path")
       .attr("class", "layer2")
       .attr("id",function(d,i){return "line"+i;})
-      .attr("transform", "translate(36,20)")
+      .attr("transform", "translate(36,10)")
       .attr("d", function(d) { return line2(d.values); })
       .style("stroke", "none");
 
@@ -258,7 +280,7 @@ d3.csv("data/ticket/104.csv", function(error, data) {
         .attr("class", "dot2")
         .attr("r", 3.5)
         .attr("cx", function(d) { return x2(d.month)+36; })
-        .attr("cy", function(d) { return y2(d.value)+20; })
+        .attr("cy", function(d) { return y2(d.value)+10; })
         .style("fill","none");
 
     tooltip.append("text")
@@ -296,7 +318,7 @@ d3.csv("data/money_y.csv", function(error, data) {
       .attr("width", x.rangeBand())
       .attr("fill","#add8e6")
       .attr("y", function(d) { return y(d.money); })
-      .attr("height", function(d) { return height - y(d.money); })
+      .attr("height", function(d) { return 420 - y(d.money); })
       .on("mouseout", function() { d3.select(this).attr("fill","#add8e6");})
       .on("mousemove", function(d) {
         // if pie chart haven't be clicked,you can acess bar chart tooltip
@@ -373,7 +395,7 @@ d3.csv("data/ticket_y.csv", function(error, data) {
 
   svg.append("g")
       .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
+      .attr("transform", "translate(0,420)")
       .call(xAxis);
 
   svg.append("g")
@@ -461,14 +483,14 @@ d3.csv("data/ticket_y.csv", function(error, data) {
       }
     }
   });
-
+console.log(data2);
   var slice=5; //the beginning state
 // pie plot
   var path = svg.datum(data2).selectAll(".pie")
       .data(pie)
       .enter().append("path")
       .attr("class", "pie")
-      .attr("transform",  "translate("+(width1+355) +","+(height/2+90)+")" )
+      .attr("transform",  "translate("+(width1+355) +","+(height1/2+80)+")" )
       .style("opacity",0.95)
       .attr("fill", function(d, i) { return z2(i); })
       .attr("d", arc)
